@@ -10,13 +10,13 @@ const OperadorHome = ({ onSelectOS }) => {
   // 1. KPI: Fila Geral (Disponíveis sem técnico)
   const filaGeral = orders.filter(os => 
     !os.tecnico_id && 
-    !['CONCLUÍDO', 'CANCELADO', 'ORCAMENTO'].includes(String(os.status).toUpperCase())
+    !['CONCLUÍDO', 'CANCELADO', 'ORCAMENTO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
   );
 
   // 2. KPI: Atribuídas a Mim (Em progresso ou aguardando)
   const minhasAtribuidas = orders.filter(os => 
     os.tecnico_id === profile?.id && 
-    !['CONCLUÍDO', 'CANCELADO'].includes(String(os.status).toUpperCase())
+    !['CONCLUÍDO', 'CANCELADO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
   );
 
   // 3. KPI: Finalizadas (Para histórico)
