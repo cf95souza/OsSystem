@@ -11,18 +11,17 @@ const StatCard = ({ icon: Icon, label, value, trend, color, loading }) => {
   };
 
   return (
-    <div className="card-premium p-7 flex items-start gap-5 hover:scale-[1.02] transition-all duration-300">
-      <div className={`p-4 rounded-2xl ${colors[color] || colors.blue} shadow-sm`}>
-        <Icon size={28} />
+    <div className="card-premium p-4 flex items-center gap-4 hover:scale-[1.02] transition-all duration-300">
+      <div className={`p-3 rounded-xl ${colors[color] || colors.blue} shadow-sm shrink-0`}>
+        <Icon size={20} />
       </div>
-      <div className="flex-1">
-        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-3">{label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 truncate">{label}</p>
         {loading ? (
-          <div className="h-10 w-24 bg-slate-100 animate-pulse rounded-xl"></div>
+          <div className="h-6 w-16 bg-slate-100 animate-pulse rounded-lg"></div>
         ) : (
-          <h4 className="text-3xl font-black text-slate-800 py-0.5 tracking-tighter">{value}</h4>
+          <h4 className="text-xl font-black text-slate-800 tracking-tight truncate">{value}</h4>
         )}
-        <p className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-tight opacity-70">{trend}</p>
       </div>
     </div>
   );
