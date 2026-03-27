@@ -351,7 +351,20 @@ export const useCatalog = () => {
   const saveService = async (serviceData) => {
     if (hasRealConnection()) {
       const { data, error } = await supabase.from('servicos').insert([serviceData]).select();
-      if (!error) await fetchCatalog();
+      
+      if (error) {
+        // Fallback: Tenta sem a coluna 'garantia' se ela não existir no banco
+        if (error.code === '42703' || error.message?.includes('garantia')) {
+          const safeData = { ...serviceData };
+          delete safeData.garantia;
+          const { data: retryData, error: retryError } = await supabase.from('servicos').insert([safeData]).select();
+          if (!retryError) await fetchCatalog();
+          return { success: !retryError, error: retryError, data: retryData?.[0] };
+        }
+        return { success: false, error };
+      }
+
+      await fetchCatalog();
       return { success: !error, error, data: data?.[0] };
     }
     return { success: true };
@@ -360,7 +373,20 @@ export const useCatalog = () => {
   const updateService = async (id, serviceData) => {
     if (hasRealConnection()) {
       const { error } = await supabase.from('servicos').update(serviceData).eq('id', id);
-      if (!error) await fetchCatalog();
+      
+      if (error) {
+        // Fallback: Tenta sem a coluna 'garantia' se ela não existir no banco
+        if (error.code === '42703' || error.message?.includes('garantia')) {
+          const safeData = { ...serviceData };
+          delete safeData.garantia;
+          const { error: retryError } = await supabase.from('servicos').update(safeData).eq('id', id);
+          if (!retryError) await fetchCatalog();
+          return { success: !retryError, error: retryError };
+        }
+        return { success: false, error };
+      }
+
+      await fetchCatalog();
       return { success: !error, error };
     }
     return { success: true };

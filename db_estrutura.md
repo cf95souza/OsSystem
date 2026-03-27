@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS public.servicos (
     preco_base DECIMAL(10,2),
     tempo_estimado INTERVAL,
     categoria TEXT, -- Ex: PPF, Estética, Mecânica
-    tipo_veiculo TEXT DEFAULT 'AMBOS' -- Valores: 'CARRO', 'MOTO', 'AMBOS'
+    tipo_veiculo TEXT DEFAULT 'AMBOS', -- Valores: 'CARRO', 'MOTO', 'AMBOS'
+    garantia TEXT DEFAULT '12 meses'
 );
 
 -- TABELA DE ESTOQUE/MATERIAIS
