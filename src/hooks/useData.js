@@ -198,7 +198,7 @@ export const useQuotes = () => {
       const { data, error } = await supabase
         .from('ordens_servico')
         .select('*, clientes(nome, telefone), veiculos(modelo, marca)')
-        .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO'])
+        .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'])
         .order('created_at', { ascending: false });
       
       if (!error && data) {

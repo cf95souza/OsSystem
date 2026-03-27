@@ -33,6 +33,9 @@ const Vendas = () => {
       case 'PENDENTE': return 'bg-amber-50 text-amber-600 border-amber-100';
       case 'REJEITADO': return 'bg-rose-50 text-rose-600 border-rose-100';
       case 'AGUARDANDO': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'EM EXECUÇÃO': return 'bg-blue-50 text-blue-500 border-blue-100';
+      case 'CONCLUÍDO': return 'bg-emerald-50 text-emerald-500 border-emerald-50';
+      case 'ENTREGUE': return 'bg-slate-100 text-slate-500 border-slate-200';
       default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   };
