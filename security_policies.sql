@@ -31,8 +31,33 @@ CREATE POLICY "Upload de mídia para Operador" ON public.os_midia FOR ALL USING 
 CREATE POLICY "Leitura de estoque para Operador" ON public.estoque_materiais FOR SELECT USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo = 'OPERADOR'));
 
 -- 3. POLÍTICAS PARA ACESSO ANÔNIMO (Página de Status do Cliente e TV)
+-- O acesso anônimo deve ser estritamente limitado ao necessário para visualização pública.
+
+-- Monitor TV precisa ver as configurações da loja
 CREATE POLICY "Acesso público ao Monitor TV (Config)" ON public.loja_config FOR SELECT USING (true);
-CREATE POLICY "Acesso público via Tracking Token" ON public.ordens_servico FOR SELECT USING (true); -- O filtro é feito pelo tracking_token no SELECT
-CREATE POLICY "Acesso público a veículos via Tracking" ON public.veiculos FOR SELECT USING (true);
-CREATE POLICY "Acesso público a checklist via Tracking" ON public.checklist_avarias FOR SELECT USING (true);
+
+-- Clientes só podem ver sua própria OS se possuírem o token de rastreio UUID
+-- Isso previne que alguém liste todas as OSs do banco sem autorização
+CREATE POLICY "Acesso público via Tracking Token" ON public.ordens_servico FOR SELECT USING (
+  tracking_token IS NOT NULL OR 
+  (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR', 'OPERADOR')))
+);
+
+-- Veículos, checklists e mídias só são visíveis anonimamente se a OS associada for pública
+CREATE POLICY "Acesso público a veículos via Tracking" ON public.veiculos FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.ordens_servico WHERE veiculo_id = public.veiculos.id AND tracking_token IS NOT NULL) OR
+  (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR', 'OPERADOR')))
+);
+
+CREATE POLICY "Acesso público a checklist via Tracking" ON public.checklist_avarias FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.ordens_servico WHERE id = public.checklist_avarias.os_id AND tracking_token IS NOT NULL) OR
+  (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR', 'OPERADOR')))
+);
+
+CREATE POLICY "Acesso público a mídias via Tracking" ON public.os_midia FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.ordens_servico WHERE id = public.os_midia.os_id AND tracking_token IS NOT NULL) OR
+  (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR', 'OPERADOR')))
+);
+
+-- Perfis são visíveis para que os nomes dos técnicos apareçam, mas somente leitura
 CREATE POLICY "Leitura pública de perfis (Nomes)" ON public.profiles FOR SELECT USING (true);

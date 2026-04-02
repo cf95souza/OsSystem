@@ -11,21 +11,39 @@ import { ToastContainer } from './components/ui/ToastContainer';
 import { ConfirmContainer } from './components/ui/ConfirmContainer';
 
 // Páginas
-import Dashboard from './pages/Dashboard';
-import Clientes from './pages/Clientes';
-import Servicos from './pages/Servicos';
-import Estoque from './pages/Materiais';
-import Vendas from './pages/Vendas';
-import OrdensServico from './pages/OrdensServico';
-import Agenda from './pages/Agenda';
-import Colaboradores from './pages/Colaboradores';
-import SettingsPage from './pages/Settings';
-import MonitorTV from './pages/MonitorTV';
-import OperadorHome from './pages/OperadorHome';
-import LoginPage from './pages/LoginPage';
-import ExecutorView from './pages/ExecutorView';
-import ProfilePage from './pages/Profile';
-import CustomerStatus from './pages/CustomerStatus';
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Clientes = React.lazy(() => import('./pages/Clientes'));
+const Servicos = React.lazy(() => import('./pages/Servicos'));
+const Estoque = React.lazy(() => import('./pages/Materiais'));
+const Vendas = React.lazy(() => import('./pages/Vendas'));
+const OrdensServico = React.lazy(() => import('./pages/OrdensServico'));
+const Agenda = React.lazy(() => import('./pages/Agenda'));
+const Colaboradores = React.lazy(() => import('./pages/Colaboradores'));
+const SettingsPage = React.lazy(() => import('./pages/Settings'));
+const MonitorTV = React.lazy(() => import('./pages/MonitorTV'));
+const OperadorHome = React.lazy(() => import('./pages/OperadorHome'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const ExecutorView = React.lazy(() => import('./pages/ExecutorView'));
+const ProfilePage = React.lazy(() => import('./pages/Profile'));
+const CustomerStatus = React.lazy(() => import('./pages/CustomerStatus'));
+import { useOrders } from './hooks/useData';
+import ReloadPrompt from './components/ui/ReloadPrompt';
+
+// Componente de Loading Premium para Transições de Rota
+const PageLoading = () => (
+  <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-6 animate-in fade-in duration-700">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
+      </div>
+    </div>
+    <div className="text-center">
+      <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] mb-1">Lucas Envelopamento</p>
+      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando módulo...</p>
+    </div>
+  </div>
+);
 import { useOrders } from './hooks/useData';
 
 // Sincronizador de Favicon e Title
@@ -252,7 +270,9 @@ function App() {
           <DocumentHead />
           <ToastContainer />
           <ConfirmContainer />
-          <Routes>
+          <ReloadPrompt />
+          <React.Suspense fallback={<PageLoading />}>
+            <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/tv" element={<MonitorTV />} />
             <Route path="/status/:id" element={<CustomerStatus />} />
@@ -272,7 +292,8 @@ function App() {
             <Route path="/operador" element={<ProtectedRoute allowedRoles={['OPERADOR', 'ADM', 'GESTOR']}><OperadorLayoutWrapper /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            </Routes>
+          </React.Suspense>
         </BrandProvider>
       </AuthProvider>
     </Router>
