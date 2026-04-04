@@ -68,7 +68,9 @@ CREATE TABLE IF NOT EXISTS public.servicos (
     tempo_estimado INTERVAL,
     categoria TEXT,
     tipo_veiculo TEXT DEFAULT 'AMBOS',
-    garantia TEXT DEFAULT '12 meses'
+    garantia TEXT DEFAULT '12 meses',
+    controle_estoque BOOLEAN DEFAULT false,
+    materiais JSONB DEFAULT '[]'
 );
 
 CREATE TABLE IF NOT EXISTS public.estoque_materiais (
@@ -119,6 +121,7 @@ CREATE TABLE IF NOT EXISTS public.checklist_avarias (
     os_id INTEGER REFERENCES public.ordens_servico(id) ON DELETE CASCADE,
     pontos_avaria JSONB DEFAULT '[]',
     notas TEXT,
+    quilometragem TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
