@@ -254,7 +254,7 @@ const ServicosView = () => {
                       <option value="PPF">PPF</option>
                       <option value="Estética">Estética</option>
                       <option value="Insulfilm">Insulfilm</option>
-                      <option value="Mecânica">Mecânica</option>
+                      <option value="Adesivagem">Adesivagem</option>
                     </select>
                   </div>
                 </div>
