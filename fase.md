@@ -28,6 +28,12 @@ Criar uma aplicação White Label para estética automotiva (PPF, Insulfilm, Env
 - [x] Implementação de **Variáveis de Ambiente (.env)** para personalização.
 - [x] **BrandContext:** Sistema de cores e logos dinâmicos.
 - [x] Layouts base para Desktop (Gestor) e Mobile (Operador).
+- [x] Ajustar layout do Certificado para A4 (Compactação Cirúrgica)
+- [x] Implementar cálculo dinâmico de garantia (Anos/Meses) com base no serviço
+- [x] Corrigir persistência do prazo de garantia na criação da OS
+- [x] Sincronizar atualizações nos repositórios principal e do cliente
+
+**Próxima Fase**: Monitoramento e Suporte de Produção.
 
 ### ✅ Fase 3: Módulo Gestor - Ordens de Serviço e Checklist (Concluída)
 - [x] **Cadastros:** Clientes, Veículos, Serviços e Materiais/Estoque.

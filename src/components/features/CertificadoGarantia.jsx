@@ -64,11 +64,40 @@ const CertificadoGarantia = ({ os, onClose }) => {
     printWindow.document.close();
   };
 
-  const dataAtual = new Date().toLocaleDateString('pt-BR');
-  
-  // Lógica de validade baseada na OS ou padrão
-  const garantiaTexto = os.garantia || '12 Meses';
-  const dataValidade = os.data_validade || '19/03/2027';
+  // Lógica de cálculo dinâmico de garantia
+  const getWarrantyInfo = () => {
+    if (!os.servicos_detalhados || !Array.isArray(os.servicos_detalhados)) {
+      return { texto: os.garantia || '12 Meses', data: os.data_validade || '19/03/2027' };
+    }
+
+    // Função para converter texto em meses para comparação
+    const toMonths = (str) => {
+      if (!str) return 0;
+      const num = parseInt(str.replace(/\D/g, '')) || 0;
+      if (str.toUpperCase().includes('ANO')) return num * 12;
+      return num;
+    };
+
+    // Encontrar o serviço com a maior garantia
+    const maiorServico = os.servicos_detalhados.reduce((max, s) => {
+      return toMonths(s.garantia) > toMonths(max.garantia) ? s : max;
+    }, os.servicos_detalhados[0] || { garantia: '12 Meses' });
+
+    const texto = maiorServico.garantia || '12 Meses';
+    const meses = toMonths(texto);
+    
+    // Calcular data baseada na OS (created_at ou data_fim)
+    const baseDate = new Date(os.created_at || new Date());
+    const validUntil = new Date(baseDate);
+    validUntil.setMonth(validUntil.getMonth() + meses);
+
+    return { 
+      texto: texto.toUpperCase(), 
+      data: validUntil.toLocaleDateString('pt-BR') 
+    };
+  };
+
+  const { texto: garantiaTexto, data: dataValidade } = getWarrantyInfo();
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 overflow-y-auto">
@@ -106,138 +135,135 @@ const CertificadoGarantia = ({ os, onClose }) => {
           ref={printRef}
           className="certificate-print-area flex-1 overflow-y-auto p-4 md:p-8 bg-white text-slate-900 font-sans print:p-0 custom-scrollbar"
         >
-          <div className="border-[8px] print:border-0 border-slate-50 p-8 print:p-2 relative w-full max-w-[794px] mx-auto min-h-[1050px] print:min-h-0 print:h-[270mm] flex flex-col justify-between overflow-hidden">
+          <div className="border-[8px] print:border-0 border-slate-50 p-4 print:p-2 relative w-full max-w-[794px] mx-auto min-h-0 flex flex-col justify-between overflow-hidden">
             
             {/* Background Decor */}
             <div className="absolute -top-32 -right-32 w-96 h-96 bg-slate-50 rounded-full blur-3xl opacity-50 print:hidden" />
             <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl opacity-50 print:hidden" />
-            
-            {/* Ornamentos Premium */}
-            <div className="absolute top-0 left-0 w-24 h-24 border-t-[6px] border-l-[6px] border-primary/20 rounded-tl-lg print:border-t-4 print:border-l-4"></div>
-            <div className="absolute top-0 right-0 w-24 h-24 border-t-[6px] border-r-[6px] border-primary/20 rounded-tr-lg print:border-t-4 print:border-r-4"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 border-b-[6px] border-l-[6px] border-primary/20 rounded-bl-lg print:border-b-4 print:border-l-4"></div>
-            <div className="absolute bottom-0 right-0 w-24 h-24 border-b-[6px] border-r-[6px] border-primary/20 rounded-br-lg print:border-b-4 print:border-r-4"></div>
 
-            {/* Header */}
-            <div className="text-center space-y-4 relative pt-4">
-                <div className="flex items-center justify-center mb-2">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt="Logomarca" className="h-24 w-auto max-w-[250px] object-contain drop-shadow-md rounded-2xl" />
-                    ) : (
-                      <div className="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-[2rem] shadow-xl shadow-primary/20 overflow-hidden p-2">
-                        <Shield size={40} className="text-white" strokeWidth={2.5} />
-                      </div>
-                    )}
+            {/* Content Container with surgical compacting */}
+            <div className="relative z-10 space-y-4">
+              {/* Top Corners Decor */}
+              <div className="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-slate-100 rounded-tr-3xl" />
+              <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-slate-100 rounded-tl-3xl" />
+
+              {/* Logo & Header Section - More Compact */}
+              <div className="text-center pt-2 pb-2">
+                <div className="inline-block p-4 border border-slate-50 rounded-3xl bg-white shadow-xl shadow-slate-200/20 mb-2">
+                  <img src={logoUrl || "/logo-lucas.png"} alt="Logomarca" className="h-20 w-auto object-contain" />
                 </div>
-                <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-800 leading-none">{name || 'OsSystem'}</h1>
-                <p className="text-xs font-black uppercase tracking-[0.5em] text-primary">Estética Automotiva de Elite</p>
-                <div className="w-24 h-1.5 bg-slate-100 mx-auto rounded-full mt-4" />
-            </div>
+                <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">{name || 'Lucas Envelopamento'}</h1>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mt-1 italic">Estética Automotiva de Elite</p>
+              </div>
 
-            {/* Title Body */}
-            <div className="text-center space-y-2 my-4 relative">
-                <h2 className="text-2xl font-serif italic text-slate-700">Certificado de Garantia</h2>
-                <p className="max-w-lg mx-auto text-slate-500 text-sm font-medium leading-relaxed px-4">
-                    Este documento oficial atesta que o veículo descrito abaixo recebeu tratamentos de proteção e estética 
-                    utilizando tecnologia de ponta, seguindo os mais rigorosos protocolos de qualidade.
+              {/* Certificate Title - Compacted Padding */}
+              <div className="text-center py-4 relative">
+                <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full opacity-20" />
+                <h2 className="text-2xl font-serif italic text-slate-800">Certificado de Garantia</h2>
+                <p className="text-[11px] text-slate-500 max-w-lg mx-auto mt-2 font-medium leading-relaxed">
+                  Este documento oficial atesta que o veículo descrito abaixo recebeu tratamentos de proteção e estética utilizando tecnologia de ponta, seguindo os mais rigorosos protocolos de qualidade.
                 </p>
-            </div>
+              </div>
 
-            {/* Data Grid */}
-            <div className="grid grid-cols-2 gap-8 py-6 border-y border-slate-50 my-4 relative">
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 print:bg-transparent">
-                            <User size={20} />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 block mb-0.5">Proprietário</span>
-                            <p className="font-bold text-base text-slate-800 uppercase tracking-tight">{os.cliente_nome || os.cliente}</p>
-                        </div>
+              {/* Data Grid Section - Reduzido py-6 para py-4 */}
+              <div className="grid grid-cols-2 gap-4 py-4 px-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 relative overflow-hidden">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
+                        <User size={18} />
                     </div>
-                    
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 print:bg-transparent">
-                            <Car size={20} />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 block mb-0.5">Veículo Selecionado</span>
-                            <p className="font-bold text-base text-slate-800 uppercase tracking-tight">{os.veiculo_desc || os.veiculo}</p>
-                        </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Proprietário</p>
+                        <p className="text-sm font-black text-slate-800 uppercase line-clamp-1">{os.cliente_nome || os.cliente}</p>
                     </div>
-                </div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
+                        <FileCheck className="text-primary" size={18} />
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Número de Registro</p>
+                        <p className="text-sm font-black text-slate-800 italic">#{String(os.id).padStart(4, '0')}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
+                        <Car size={18} />
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Veículo Selecionado</p>
+                        <p className="text-sm font-black text-slate-800 uppercase line-clamp-1">{os.veiculo_desc || os.veiculo}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
+                        <Calendar size={18} />
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Data de Execução</p>
+                        <p className="text-sm font-black text-slate-800">{os.data || new Date(os.created_at).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                 </div>
+              </div>
 
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 print:bg-transparent">
-                            <Award size={20} />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 block mb-0.5">Número de Registro</span>
-                            <p className="font-bold text-base text-slate-800 uppercase tracking-tight">#{os.id.toString().padStart(4, '0')}</p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 print:bg-transparent">
-                            <Calendar size={20} />
-                        </div>
-                        <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 block mb-0.5">Data de Execução</span>
-                            <p className="font-bold text-base text-slate-800 uppercase tracking-tight">{os.data || dataAtual}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Services List */}
-            <div className="space-y-4 relative mb-6">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 text-center">Serviços e Proteções Aplicadas</h3>
-                <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-                    {(os.servico || 'Estética Automotiva').split(',').map((s, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 print:bg-transparent print:border-b border border-slate-100 print:border-slate-200 rounded-xl print:rounded-none text-[9px] font-black uppercase tracking-tight text-slate-700 shadow-sm print:shadow-none">
-                          <CheckCircle size={12} className="text-emerald-500" />
-                          {s.trim()}
-                      </div>
+              {/* Tags de Serviços Aplicados - Mais compactas */}
+              <div className="text-center">
+                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2">Serviços e Proteções Aplicadas</p>
+                 <div className="flex flex-wrap justify-center gap-2">
+                    {(os.servico || '').split(',').map((s, i) => (
+                        <span key={i} className="px-3 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-black text-slate-600 uppercase flex items-center gap-1.5 shadow-sm">
+                            <Shield className="text-emerald-500" size={10} strokeWidth={3} /> {s.trim()}
+                        </span>
                     ))}
-                </div>
+                 </div>
+              </div>
             </div>
 
-            {/* Warranty Badge Premium */}
-            <div className="bg-slate-900 print:bg-slate-100 print:text-slate-900 rounded-3xl print:rounded-2xl p-8 flex items-center justify-between text-white relative overflow-hidden group shadow-xl print:shadow-none print:border print:border-slate-300">
-                <Shield size={120} className="absolute -right-6 -top-6 text-white/5 print:text-black/5 rotate-12" />
-                <div className="relative">
-                    <h4 className="text-[9px] font-black uppercase tracking-[0.4em] opacity-50 print:opacity-100 mb-2 text-primary">Certificado de Proteção</h4>
-                    <p className="text-4xl font-black tracking-tighter drop-shadow-md print:drop-shadow-none print:text-slate-800">{garantiaTexto}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-widest mt-2 flex items-center gap-1.5 print:text-slate-600">
-                        <Calendar size={12} className="text-primary" /> Válido até {dataValidade}
-                    </p>
-                </div>
-                <div className="relative flex flex-col items-end gap-2 text-right">
-                    <div className="p-3 bg-white/10 print:bg-white rounded-2xl backdrop-blur-md border border-white/20 print:border-slate-200">
-                        <QrCode size={48} strokeWidth={1} className="print:text-slate-800" />
-                    </div>
-                    <p className="text-[7px] font-black uppercase tracking-[0.3em] opacity-40 print:opacity-100 print:text-slate-500">Autenticidade Verificada</p>
-                </div>
+            {/* Warranty Badge Section - Surgical Compacted (p-8 para p-6) */}
+            <div className="my-2 px-8">
+               <div className="bg-slate-900 rounded-[2.5rem] p-6 text-white relative overflow-hidden flex items-center justify-between shadow-2xl">
+                  {/* Subtle BG Icon - Scaled Down */}
+                  <Shield size={120} className="absolute -right-6 -bottom-6 text-white/5 rotate-12" />
+                  
+                  <div className="relative z-10">
+                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Certificado de Proteção</p>
+                     <h3 className="text-4xl font-black tracking-tighter flex items-baseline gap-2">
+                        {garantiaTexto.split(' ')[0]} <span className="text-xl uppercase text-white/50">{garantiaTexto.split(' ')[1]}</span>
+                     </h3>
+                     <div className="flex items-center gap-2 mt-2 py-2 px-3 bg-white/5 rounded-xl border border-white/5 w-fit">
+                        <Calendar size={14} className="text-primary" />
+                        <p className="text-[10px] font-black uppercase tracking-widest">Válido até <span className="text-primary">{dataValidade}</span></p>
+                     </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 relative z-10 bg-white/5 p-4 rounded-3xl border border-white/10 backdrop-blur-sm">
+                      <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
+                          <QrCode size={24} />
+                      </div>
+                      <p className="text-[8px] font-black uppercase tracking-widest text-center leading-tight opacity-60">Autenticidade<br/>Verificada</p>
+                  </div>
+               </div>
             </div>
 
-            {/* Signature Area */}
-            <div className="mt-8 text-center space-y-6 pt-8 border-t border-slate-100 relative">
-                <div className="flex justify-center gap-24 print:gap-16">
-                    <div className="flex flex-col items-center gap-2">
-                         <div className="w-40 h-px bg-slate-300 mb-1" />
-                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Responsável Técnico</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                         <div className="w-40 h-px bg-slate-300 mb-1" />
-                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Diretor de Qualidade</p>
-                    </div>
+            {/* Signatures & Footer - Slipped up (mt-8 para mt-4) */}
+            <div className="px-12 mt-4 pt-4 mb-4">
+              <div className="grid grid-cols-2 gap-16">
+                <div className="text-center">
+                  <div className="h-px bg-slate-200 mb-2 w-full" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsável Técnico</p>
                 </div>
-                <p className="text-[7px] text-slate-400 font-medium italic tracking-wide max-w-sm mx-auto">
-                    A validade desta garantia está condicionada à manutenção preventiva conforme manual do proprietário entregue no ato do serviço.
-                </p>
+                <div className="text-center">
+                  <div className="h-px bg-slate-200 mb-2 w-full" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Diretor de Qualidade</p>
+                </div>
+              </div>
+              <p className="text-[8px] text-center text-slate-300 font-bold uppercase mt-4 max-w-xs mx-auto leading-relaxed">
+                A validade desta garantia está condicionada à manutenção preventiva conforme manual do proprietário entregue no ato do serviço.
+              </p>
             </div>
 
+            {/* Bottom Corners Decor */}
+            <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-slate-100 rounded-br-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-slate-100 rounded-bl-3xl" />
           </div>
         </div>
       </div>

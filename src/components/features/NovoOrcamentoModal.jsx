@@ -82,6 +82,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
           nome: service.nome, 
           preco_custom: service.preco_base, 
           preco_base: service.preco_base,
+          garantia: service.garantia || '12 Meses',
           controle_estoque: service.controle_estoque,
           materiais: service.materiais || []
         }];
@@ -124,6 +125,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
           nome: s.nome || 'Serviço', 
           preco_base: s.preco_custom || 0, // Agora enviamos o preço customizado como base da OS
           preco_original: s.preco_base,
+          garantia: s.garantia || '12 Meses',
           progresso: 0,
           controle_estoque: s.controle_estoque || false,
           materiais: (s.materiais || []).map(m => ({
