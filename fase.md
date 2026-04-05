@@ -300,6 +300,12 @@ Para entregar um produto superior aos concorrentes, implementaremos:
     - [x] Interface do Sino no Header com filtro de apenas "Não Lidas" e botão "Limpar Tudo".
     - [x] Estabilização de UX: Painel limpo que some ao marcar como lido.
 
+### ✅ Fase 36: Flexibilidade Administrativa e Edição de Valores (Concluída)
+- [x] **Edição Dinâmica**: Implementar modal de ajuste individual de Preço e Garantia para cada item da OS/Orçamento.
+- [x] **Recálculo em Tempo Real**: Atualização automática do Valor Total ao editar serviços.
+- [x] **UX Gestão**: Centralização da funcionalidade no menu "Ações" (três pontinhos) da tela de Vendas.
+- [x] **Segurança Financeira**: Bloqueio de edição para Operadores e avisos sobre pagamentos já registrados.
+
 ---
-*Última atualização: 04/04/2026 às 01:25 - STATUS: FASE 35 CONCLUÍDA 🚀*
+*Última atualização: 05/04/2026 às 19:40 - STATUS: FASE 36 CONCLUÍDA 🚀*
 ```
