@@ -145,20 +145,20 @@ const EditOrderServicesModal = ({ order, onClose, onSave }) => {
                 </div>
             </div>
 
-            <div className="flex gap-3 w-full md:w-auto">
+            <div className="flex gap-2 w-full md:w-auto">
               <button 
                 onClick={onClose}
-                className="flex-1 md:flex-none px-8 py-4 text-slate-500 font-black uppercase text-[10px] hover:bg-slate-100 rounded-2xl tracking-widest transition-all"
+                className="flex-1 md:flex-none px-4 py-4 text-slate-500 font-black uppercase text-[10px] hover:bg-slate-100 rounded-2xl tracking-widest transition-all"
               >
                 Descartar
               </button>
               <button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex-1 md:flex-none px-10 py-4 bg-primary text-white font-black uppercase text-[10px] rounded-2xl tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="flex-[2] md:flex-none px-6 py-4 bg-primary text-white font-black uppercase text-[10px] rounded-2xl tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                Confirmar Alterações
+                Salvar Alterações
               </button>
             </div>
           </div>
