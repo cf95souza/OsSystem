@@ -91,7 +91,14 @@ const Vendas = () => {
   };
 
   const handleCancel = async (quote) => {
-    if (confirm(`Deseja realmente CANCELAR a proposta #${quote.id} de ${quote.cliente_nome}? Ela sairá dos indicadores de faturamento.`)) {
+    const confirm = await confirmDialog(
+      'Cancelar Proposta',
+      `Deseja realmente CANCELAR a proposta #${quote.id} de ${quote.cliente_nome}? Ela sairá dos indicadores de faturamento.`,
+      'Confirmar Cancelamento',
+      'Desistir'
+    );
+
+    if (confirm) {
       const res = await cancelQuote(quote.id);
       if (res.success) {
         toast.success('Proposta cancelada com sucesso.');
@@ -103,7 +110,14 @@ const Vendas = () => {
   };
 
   const handleReopen = async (quote) => {
-    if (confirm(`Deseja reabrir a OS #${quote.id}? O status voltará para ORCAMENTO.`)) {
+    const confirm = await confirmDialog(
+      'Reabrir Orçamento',
+      `Deseja reabrir a OS #${quote.id}? O agendamento atual será cancelado e ela voltará ao status de ORCAMENTO.`,
+      'Reabrir Agora',
+      'Manter como está'
+    );
+
+    if (confirm) {
       const res = await reopenQuote(quote.id);
       if (res.success) {
         toast.success('OS reaberta como orçamento!');
