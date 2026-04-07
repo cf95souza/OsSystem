@@ -328,7 +328,30 @@ export const useClients = () => {
 
   const saveClient = async (clientData) => {
     if (hasRealConnection()) {
-      const { data, error } = await supabase.from('clientes').insert([clientData]).select();
+      // Normalização
+      const normalizedPhone = (clientData.telefone || '').replace(/\D/g, '');
+      const normalizedName = (clientData.nome || '').toUpperCase().trim();
+      
+      const cleanData = {
+        ...clientData,
+        nome: normalizedName,
+        telefone: normalizedPhone
+      };
+
+      // Verificação de Duplicidade
+      const { data: existing } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .eq('telefone', normalizedPhone);
+      
+      if (existing && existing.length > 0) {
+        return { 
+          success: false, 
+          error: { message: `Este telefone já está cadastrado para: ${existing[0].nome}` } 
+        };
+      }
+
+      const { data, error } = await supabase.from('clientes').insert([cleanData]).select();
       return { success: !error, error, data: data?.[0] };
     }
     return { success: true };
@@ -336,7 +359,31 @@ export const useClients = () => {
 
   const updateClient = async (id, clientData) => {
     if (hasRealConnection()) {
-      const { error } = await supabase.from('clientes').update(clientData).eq('id', id);
+      // Normalização
+      const normalizedPhone = (clientData.telefone || '').replace(/\D/g, '');
+      const normalizedName = (clientData.nome || '').toUpperCase().trim();
+      
+      const cleanData = {
+        ...clientData,
+        nome: normalizedName,
+        telefone: normalizedPhone
+      };
+
+      // Verificação de Duplicidade (Exceto o próprio registro sendo editado)
+      const { data: existing } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .eq('telefone', normalizedPhone)
+        .neq('id', id);
+      
+      if (existing && existing.length > 0) {
+        return { 
+          success: false, 
+          error: { message: `Este telefone já pertence ao cliente: ${existing[0].nome}` } 
+        };
+      }
+
+      const { error } = await supabase.from('clientes').update(cleanData).eq('id', id);
       if (!error) await fetchClients();
       return { success: !error, error };
     }

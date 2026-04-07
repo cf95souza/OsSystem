@@ -163,7 +163,11 @@ const ClientesView = () => {
                      setSelectedClientProfile({...selectedClientProfile, ...data});
                   }
               } else {
-                  toast.error('Erro ao salvar. Verifique o banco!');
+                  if (res.error?.message?.includes('telefones') || res.error?.message?.includes('cadastrado')) {
+                    toast.warning(res.error.message);
+                  } else {
+                    toast.error('Erro ao salvar. Verifique o banco!');
+                  }
               }
             }} className="p-6 space-y-4">
               <div className="space-y-1">

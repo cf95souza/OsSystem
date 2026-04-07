@@ -57,6 +57,12 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
       setSelectedClient(result.data.id);
       setShowQuickAddClient(false);
       setStep(2);
+    } else {
+      if (result.error?.message?.includes('telefones') || result.error?.message?.includes('cadastrado')) {
+        toast.warning(result.error.message);
+      } else {
+        toast.error('Erro ao cadastrar cliente rápido.');
+      }
     }
   };
 
