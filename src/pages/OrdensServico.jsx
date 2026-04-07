@@ -42,6 +42,10 @@ const OrdensServico = () => {
   const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [activeOS, setActiveOS] = useState(null);
 
+  // Deriva o OS ativo da lista geral para garantir reatividade após updates (Fase 41)
+  const currentActiveOS = activeOS ? (orders || []).find(o => o.id === activeOS.id) : null;
+  const currentActivePaymentOS = activePaymentOS ? (orders || []).find(o => o.id === activePaymentOS.id) : null;
+
   const filteredOrders = (orders || []).filter(os => 
     os && os.status !== 'ORCAMENTO' && (
       String(os.cliente_nome || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
@@ -335,19 +339,19 @@ const OrdensServico = () => {
         </div>
       </div>
 
-      {showChecklist && <CarVisualChecklist osData={activeOS} onClose={() => setShowChecklist(false)} />}
-      {showCertificado && <CertificadoGarantia os={activeOS} onClose={() => setShowCertificado(false)} />}
-      {showPagamento && activePaymentOS && (
+      {showChecklist && <CarVisualChecklist osData={currentActiveOS} onClose={() => setShowChecklist(false)} />}
+      {showCertificado && <CertificadoGarantia os={currentActiveOS} onClose={() => setShowCertificado(false)} />}
+      {showPagamento && currentActivePaymentOS && (
         <PagamentoModal 
-           os={activePaymentOS}
+           os={currentActivePaymentOS}
            onClose={() => setShowPagamento(false)}
            onSave={registerPayment}
            onDelete={deletePayment}
         />
       )}
-      {showDetalhes && activeOS && (
+      {showDetalhes && currentActiveOS && (
         <DetalhesServicoModal 
-          os={activeOS} 
+          os={currentActiveOS} 
           onClose={() => {
             setShowDetalhes(false);
             setActiveOS(null);
