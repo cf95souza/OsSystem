@@ -494,7 +494,7 @@ const Vendas = () => {
                 </>
               )}
 
-              {isManagement && (
+              {isManagement && activeMenuQuote.status !== 'ENTREGUE' && (
                 <button 
                   onClick={() => { 
                     setSelectedQuote(activeMenuQuote);
@@ -503,7 +503,7 @@ const Vendas = () => {
                   }} 
                   className="w-full py-4 bg-primary/10 text-primary font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  <Edit2 size={16} /> Editar Valores e Garantia
+                  <Edit2 size={16} /> Editar Serviços e Valores
                 </button>
               )}
               

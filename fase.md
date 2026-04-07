@@ -342,4 +342,13 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [ ] **Refinamento de Gatilho**: Mover a baixa definitiva de estoque apenas para o status `ENTREGUE`.
 
 ---
-*Última atualização: 07/04/2026 às 14:27 - STATUS: FASE 41 EM EXECUÇÃO 🚀*
+*Última atualização: 07/04/2026 às 14:27 - STATUS: FASE 41 CONCLUÍDA LOCALMENTE 🚀*
+
+### 🚀 Fase 42: Edição Dinâmica de Escopo (Em Execução)
+- [ ] **Integração com Catálogo**: Permitir adicionar novos serviços a orçamentos existentes em Vendas.
+- [ ] **Customização Ad-Hoc**: Trazer valor e garantia padrão do catálogo com possibilidade de ajuste imediato.
+- [ ] **Remoção de Itens**: Permitir excluir serviços de orçamentos ou ordens não entregues.
+- [ ] **Trava de Segurança**: Ocultar edição para veículos já marcados como `ENTREGUE`.
+
+---
+*Última atualização: 07/04/2026 às 14:38 - STATUS: FASE 42 EM EXECUÇÃO 🚀*
