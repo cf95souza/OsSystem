@@ -22,6 +22,7 @@ const OrdensServico = React.lazy(() => import('./pages/OrdensServico'));
 const Agenda = React.lazy(() => import('./pages/Agenda'));
 const Colaboradores = React.lazy(() => import('./pages/Colaboradores'));
 const SettingsPage = React.lazy(() => import('./pages/Settings'));
+const Trabalhos = React.lazy(() => import('./pages/Trabalhos'));
 const MonitorTV = React.lazy(() => import('./pages/MonitorTV'));
 const OperadorHome = React.lazy(() => import('./pages/OperadorHome'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
@@ -291,6 +292,7 @@ function App() {
             <Route path="/vendas" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Vendas /></AppLayout></ProtectedRoute>} />
             <Route path="/ordens" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR', 'OPERADOR']}><AppLayout><OrdensServico /></AppLayout></ProtectedRoute>} />
             <Route path="/agenda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Agenda /></AppLayout></ProtectedRoute>} />
+            <Route path="/trabalhos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Trabalhos /></AppLayout></ProtectedRoute>} />
             <Route path="/servicos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Servicos /></AppLayout></ProtectedRoute>} />
             <Route path="/estoque" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Estoque /></AppLayout></ProtectedRoute>} />
             <Route path="/colaboradores" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Colaboradores /></AppLayout></ProtectedRoute>} />

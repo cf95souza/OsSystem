@@ -145,6 +145,15 @@ CREATE TABLE IF NOT EXISTS public.notificacoes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
+CREATE TABLE IF NOT EXISTS public.trabalhos_recentes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    titulo TEXT NOT NULL,
+    url TEXT NOT NULL,
+    storage_path TEXT NOT NULL,
+    categoria TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
 -- 3. FUNÇÕES E TRIGGERS (CONEXÃO AUTH <-> PUBLIC)
 -- ----------------------------------------------------------------------------
 
@@ -187,6 +196,7 @@ ALTER TABLE public.servicos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.estoque_materiais ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notificacoes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.trabalhos_recentes ENABLE ROW LEVEL SECURITY;
 
 -- POLÍTICAS PARA ADM E GESTORES (Usando check_user_role para evitar recursão)
 CREATE POLICY "Profiles: Próprio ou Gestores" ON public.profiles FOR ALL USING (auth.uid() = id OR public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
@@ -197,6 +207,7 @@ CREATE POLICY "OS: Gestores total" ON public.ordens_servico FOR ALL USING (publi
 CREATE POLICY "Servicos: Gestores total" ON public.servicos FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 CREATE POLICY "Estoque: Gestores total" ON public.estoque_materiais FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 CREATE POLICY "Notificacoes: Gestores total" ON public.notificacoes FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Trabalhos: Gestores total" ON public.trabalhos_recentes FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 
 -- POLÍTICAS PARA OPERADORES (Apenas o essencial)
 CREATE POLICY "Leitura essencial para Operador" ON public.servicos FOR SELECT USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo = 'OPERADOR'));
@@ -206,6 +217,7 @@ CREATE POLICY "Gestão de OS para Operador" ON public.ordens_servico FOR ALL USI
 CREATE POLICY "Monitor TV Config Pública" ON public.loja_config FOR SELECT USING (true);
 CREATE POLICY "Monitor TV Perfis Pública" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Monitor TV OS Pública" ON public.ordens_servico FOR SELECT USING (true);
+CREATE POLICY "Trabalhos: Leitura Pública" ON public.trabalhos_recentes FOR SELECT USING (true);
 
 -- 5. STORAGE
 -- Criar bucket 'os-photos' manualmente como PUBLIC.
@@ -214,7 +226,7 @@ CREATE POLICY "Monitor TV OS Pública" ON public.ordens_servico FOR SELECT USING
 -- UPDATE public.profiles SET cargo = 'ADM' WHERE email = 'cf95.souza@gmail.com';
 
 -- 7. REALTIME
-ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notificacoes, estoque_materiais;
+ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notificacoes, estoque_materiais, trabalhos_recentes;
 ```
 
 ## 📋 Passo a Passo de Deploy

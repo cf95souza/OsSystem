@@ -12,7 +12,8 @@ import {
   ChevronRight,
   Monitor,
   LifeBuoy,
-  X
+  X,
+  Image
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBrand } from '../../contexts/BrandContext';
@@ -31,6 +32,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
     { id: 'clientes', label: 'Clientes', icon: Users, roles: ['ADM', 'GESTOR'] },
     { id: 'servicos', label: 'Serviços', icon: UserSquare2, roles: ['ADM', 'GESTOR'] },
     { id: 'estoque', label: 'Estoque', icon: Package, roles: ['ADM', 'GESTOR'] },
+    { id: 'trabalhos', label: 'Trabalhos', icon: Image, roles: ['ADM', 'GESTOR'] },
     { id: 'colaboradores', label: 'Colaboradores', icon: UserSquare2, roles: ['ADM', 'GESTOR'] },
     { id: 'relatorios', label: 'Relatórios', icon: TrendingUp, roles: ['ADM', 'GESTOR'] },
     { id: 'settings', label: 'Configurações', icon: Settings, roles: ['ADM', 'GESTOR'] },

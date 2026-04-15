@@ -400,3 +400,25 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Flexibilidade de Escala**: Permitir que gestores alterem o técnico responsável de uma OS ativa.
 - [x] **Liberação de Carga**: Implementar opção de remover técnico, voltando a OS para a fila disponível.
 - [x] **Interface Gestora**: Adicionar modal de atribuição rápida na lista de Ordens de Serviço.
+
+---
+
+### ✅ Fase 49: Galeria de Trabalhos Recentes (Concluída)
+- [x] **Fase 49.1: Setup de Banco e Storage**
+    - [x] Atualizar `estrutura_db.md` (Tabela `trabalhos_recentes` e RLS).
+    - [x] Definir políticas de Storage (Preparação).
+- [x] **Fase 49.2: Interface Base e Roteamento**
+    - [x] Registro da rota `/trabalhos` no `App.jsx`.
+    - [x] Adição de menu "Trabalhos" no `Sidebar.jsx`.
+    - [x] Criação do esqueleto da página `Trabalhos.jsx`.
+- [x] **Fase 49.3: Fluxo de Upload e Listagem**
+    - [x] Implementação de upload para bucket `trabalhos-recentes`.
+    - [x] Persistência no banco de dados com metadados.
+    - [x] Grid responsivo de visualização.
+- [x] **Fase 49.4: Gestão Avançada (Renomear e Excluir)**
+    - [x] Modal de edição de título e categoria.
+    - [x] Lógica de remoção física e lógica.
+    - [x] Polimento Visual e Micro-animações.
+
+---
+*Última atualização: 15/04/2026 às 11:30 - STATUS: FASE 49 CONCLUÍDA LOCALMENTE 🚀*
