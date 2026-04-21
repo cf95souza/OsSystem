@@ -30,6 +30,7 @@ import CertificadoGarantia from '../components/features/CertificadoGarantia';
 import { sendWhatsApp, getServiceFinishedMsg, getVehicleReceivedMsg } from '../utils/whatsappUtils';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
+import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 
 const OrdensServico = () => {
   const { orders, loading, deliverOrder, updateOrderProgress, registerPayment, deletePayment, removeServiceFromOrder } = useOrders();
@@ -43,18 +44,43 @@ const OrdensServico = () => {
   const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [activeOS, setActiveOS] = useState(null);
   const [showAtribuir, setShowAtribuir] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
+
+  const statusOptions = ['TODOS', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'];
+
+  const toggleSelection = (item) => {
+    if (item === 'TODOS') {
+      setSelectedStatuses(['TODOS']);
+      return;
+    }
+
+    let next = selectedStatuses.filter(i => i !== 'TODOS');
+    if (next.includes(item)) {
+      next = next.filter(i => i !== item);
+       if (next.length === 0) next = ['TODOS'];
+    } else {
+      next = [...next, item];
+    }
+    setSelectedStatuses(next);
+  };
 
   // Deriva o OS ativo da lista geral para garantir reatividade após updates (Fase 41)
   const currentActiveOS = activeOS ? (orders || []).find(o => o.id === activeOS.id) : null;
   const currentActivePaymentOS = activePaymentOS ? (orders || []).find(o => o.id === activePaymentOS.id) : null;
 
-  const filteredOrders = (orders || []).filter(os => 
-    os && os.status !== 'ORCAMENTO' && os.status !== 'CANCELADO' && (
+  const filteredOrders = (orders || []).filter(os => {
+    if (!os) return false;
+    
+    const matchesSearch = 
       String(os.cliente_nome || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
       String(os.veiculo_desc || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
-      String(os.id || '').toLowerCase().includes(String(searchTerm || '').toLowerCase())
-    )
-  );
+      String(os.id || '').toLowerCase().includes(String(searchTerm || '').toLowerCase());
+
+    const osStatus = String(os.status || 'AGUARDANDO').trim().toUpperCase();
+    const matchesStatus = selectedStatuses.includes('TODOS') || selectedStatuses.some(s => s === osStatus);
+
+    return os.status !== 'ORCAMENTO' && os.status !== 'CANCELADO' && matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="fade-in space-y-6 pb-20">
@@ -64,23 +90,32 @@ const OrdensServico = () => {
           <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase tracking-tighter">Ordens de Serviço</h2>
           <p className="text-sm text-slate-500 font-medium">Fluxo de produção e certificação de garantia.</p>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-           <div className="relative group w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
-              <input 
-                type="text" 
-                placeholder="Buscar OS, Cliente ou Veículo..."
-                className="pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none w-full md:w-96 transition-all shadow-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-           </div>
-        </div>
+            <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+               <MultiSelectDropdown 
+                 label="Filtrar Status"
+                 options={statusOptions}
+                 selected={selectedStatuses}
+                 onToggle={toggleSelection}
+                 icon={Filter}
+               />
+               <div className="relative group w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar OS, Cliente ou Veículo..."
+                    className="pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none w-full md:w-96 transition-all shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+               </div>
+            </div>
       </div>
 
-      {/* Grid de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
+        <div 
+          onClick={() => toggleSelection('AGUARDANDO')}
+          className={`bg-white p-6 rounded-lg border shadow-sm flex items-center justify-between border-l-4 border-l-amber-500 cursor-pointer hover:shadow-md transition-all active:scale-95 ${selectedStatuses.includes('AGUARDANDO') ? 'ring-2 ring-amber-500/20 bg-amber-50/10' : 'border-slate-200'}`}
+        >
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Aguardando</p>
             <h4 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -91,7 +126,10 @@ const OrdensServico = () => {
             <Clock className="text-amber-500" size={24} />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-blue-500">
+        <div 
+          onClick={() => toggleSelection('EM EXECUÇÃO')}
+          className={`bg-white p-6 rounded-lg border shadow-sm flex items-center justify-between border-l-4 border-l-blue-500 cursor-pointer hover:shadow-md transition-all active:scale-95 ${selectedStatuses.includes('EM EXECUÇÃO') ? 'ring-2 ring-blue-500/20 bg-blue-50/10' : 'border-slate-200'}`}
+        >
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Em Execução</p>
             <h4 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -102,7 +140,10 @@ const OrdensServico = () => {
              <TrendingUp size={24} className="text-blue-500" />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500">
+        <div 
+          onClick={() => toggleSelection('CONCLUÍDO')}
+          className={`bg-white p-6 rounded-lg border shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500 cursor-pointer hover:shadow-md transition-all active:scale-95 ${selectedStatuses.includes('CONCLUÍDO') ? 'ring-2 ring-emerald-500/20 bg-emerald-50/10' : 'border-slate-200'}`}
+        >
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Concluídas</p>
             <h4 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -113,7 +154,10 @@ const OrdensServico = () => {
             <CheckCircle2 size={24} className="text-emerald-500" />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-slate-400">
+        <div 
+          onClick={() => toggleSelection('ENTREGUE')}
+          className={`bg-white p-6 rounded-lg border shadow-sm flex items-center justify-between border-l-4 border-l-slate-400 cursor-pointer hover:shadow-md transition-all active:scale-95 ${selectedStatuses.includes('ENTREGUE') ? 'ring-2 ring-slate-500/20 bg-slate-50/10' : 'border-slate-200'}`}
+        >
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Entregues</p>
             <h4 className="text-3xl font-bold text-slate-800 tracking-tight">

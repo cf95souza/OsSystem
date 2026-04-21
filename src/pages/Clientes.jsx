@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2, Wrench, Save } from 'lucide-react';
+import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2, Wrench, Save, Trash2 } from 'lucide-react';
 import { useClients, useQuotes, useVehicles } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import { toast } from '../utils/toast';
+import { confirmDialog } from '../utils/confirm';
 
 const ClientesView = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { clients, loading, saveClient, updateClient } = useClients();
+  const { clients, loading, saveClient, updateClient, deleteClient } = useClients();
   const { quotes, saveQuote } = useQuotes();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
@@ -19,6 +20,35 @@ const ClientesView = () => {
 
   // Hook de veículos (condicional ao cliente selecionado)
   const { vehicles, updateVehicle } = useVehicles(selectedClientProfile?.id);
+
+  const handleDeleteClient = async (c) => {
+    const clientQuotes = (quotes || []).filter(q => q.cliente_id === c.id || q.cliente_telefone === c.telefone);
+    
+    if (clientQuotes.length > 0) {
+      toast.error('Não é possível excluir um cliente que possui serviços registrados.');
+      return;
+    }
+
+    // Se estiver no perfil aberto, podemos ser mais específicos sobre veículos
+    const hasVehicles = selectedClientProfile?.id === c.id ? (vehicles?.length > 0) : true; // Assume true na lista para segurança do aviso
+
+    const confirm = await confirmDialog(
+      'Excluir Cliente',
+      `Tem certeza que deseja excluir ${c.nome}?${hasVehicles ? '\n\nATENÇÃO: Caso existam veículos vinculados a este cliente, eles também serão removidos.' : ''}`,
+      'Excluir Permanentemente',
+      'Cancelar'
+    );
+
+    if (confirm) {
+      const res = await deleteClient(c.id);
+      if (res.success) {
+        toast.success('Cliente removido com sucesso.');
+        if (selectedClientProfile?.id === c.id) setSelectedClientProfile(null);
+      } else {
+        toast.error('Erro ao excluir cliente. Verifique se existem dependências no banco.');
+      }
+    }
+  };
 
   // Filtragem básica local
   const filteredClients = clients.filter(c => 
@@ -109,17 +139,32 @@ const ClientesView = () => {
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingClient(c);
-                        setShowAddModal(true);
-                      }}
-                      className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
-                      title="Editar Cadastro"
-                    >
-                      <Edit2 size={18} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingClient(c);
+                          setShowAddModal(true);
+                        }}
+                        className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                        title="Editar Cadastro"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      
+                      {(quotes || []).filter(q => q.cliente_id === c.id || q.cliente_telefone === c.telefone).length === 0 && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClient(c);
+                          }}
+                          className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                          title="Excluir Cliente"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -210,7 +255,16 @@ const ClientesView = () => {
                   <p className="text-xs text-slate-500 font-bold font-mono mt-1">{selectedClientProfile.telefone}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                {(quotes || []).filter(q => q.cliente_id === selectedClientProfile.id || q.cliente_telefone === selectedClientProfile.telefone).length === 0 && (
+                  <button 
+                    onClick={() => handleDeleteClient(selectedClientProfile)}
+                    className="p-2 hover:bg-red-50 rounded-full transition-all text-slate-300 hover:text-red-500"
+                    title="Excluir Cliente"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
                 <button 
                    onClick={() => { setEditingClient(selectedClientProfile); setShowAddModal(true); }}
                    className="p-2 hover:bg-slate-200 rounded-full transition-all text-primary hover:text-primary-dark"

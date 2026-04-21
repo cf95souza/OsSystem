@@ -17,20 +17,17 @@ const AtribuirTecnicoModal = ({ os, onClose }) => {
   const handleAssign = async (tecnicoId, tecnicoNome) => {
     setIsSaving(true);
     try {
-      const result = await updateOrderProgress(os.id, {
+      // Disparamos a atualização (que agora é otimista no hook)
+      updateOrderProgress(os.id, {
         tecnico_id: tecnicoId,
         tecnico: tecnicoNome
       });
 
-      if (result.success) {
-        toast.success(tecnicoId ? `OS atribuída a ${tecnicoNome}` : 'OS liberada para a fila geral');
-        onClose();
-      } else {
-        toast.error('Erro ao atualizar responsável: ' + (result.error?.message || 'Erro desconhecido'));
-      }
+      // Fechamos o modal imediatamente para dar a sensação de velocidade
+      toast.success(tecnicoId ? `Atribuindo OS a ${tecnicoNome}...` : 'Liberando OS...');
+      onClose();
     } catch (error) {
       toast.error('Erro ao processar atribuição');
-    } finally {
       setIsSaving(false);
     }
   };

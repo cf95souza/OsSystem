@@ -27,6 +27,7 @@ import { toast } from '../utils/toast';
 import PagamentoModal from '../components/features/PagamentoModal';
 import EditOrderServicesModal from '../components/features/EditOrderServicesModal';
 import { useAuth } from '../contexts/AuthContext';
+import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 
 const Vendas = () => {
   const navigate = useNavigate();
@@ -38,6 +39,25 @@ const Vendas = () => {
   const [showPagamento, setShowPagamento] = useState(false);
   const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [showEditServices, setShowEditServices] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
+
+  const statusOptions = ['TODOS', 'ORÇAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'];
+
+  const toggleSelection = (item) => {
+    if (item === 'TODOS') {
+      setSelectedStatuses(['TODOS']);
+      return;
+    }
+
+    let next = selectedStatuses.filter(i => i !== 'TODOS');
+    if (next.includes(item)) {
+      next = next.filter(i => i !== item);
+       if (next.length === 0) next = ['TODOS'];
+    } else {
+      next = [...next, item];
+    }
+    setSelectedStatuses(next);
+  };
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
   const { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, cancelQuote, registerPayment, deletePayment, updateQuoteServices } = useQuotes();
@@ -164,13 +184,19 @@ const Vendas = () => {
     }
   };
 
-  const filteredQuotes = (quotes || []).filter(q => 
-    q && (
+  const filteredQuotes = (quotes || []).filter(q => {
+    if (!q) return false;
+
+    const matchesSearch = 
       (q.cliente_nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (q.veiculo_desc || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (q.id || '').toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+      (q.id || '').toString().toLowerCase().includes(searchTerm.toLowerCase());
+
+    const qStatus = String(q.status || 'ORÇAMENTO').trim().toUpperCase();
+    const matchesStatus = selectedStatuses.includes('TODOS') || selectedStatuses.some(s => s === qStatus);
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="fade-in space-y-6 pb-20">
@@ -191,7 +217,10 @@ const Vendas = () => {
 
       {/* KPIs de Conversão Dinâmicos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card-premium p-6 flex items-center justify-between border-0 shadow-xl shadow-slate-200/50 bg-white group">
+        <div 
+          onClick={() => toggleSelection('ORÇAMENTO')}
+          className={`card-premium p-6 flex items-center justify-between border-0 shadow-xl shadow-slate-200/50 bg-white group cursor-pointer transition-all active:scale-95 ${selectedStatuses.includes('ORÇAMENTO') ? 'ring-2 ring-amber-500/20 bg-amber-50/5' : ''}`}
+        >
           <div className="flex-1">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Aguardando Aprovação</p>
             {loading ? (
@@ -208,7 +237,12 @@ const Vendas = () => {
           </div>
         </div>
 
-        <div className="card-premium p-6 flex items-center justify-between border-0 shadow-xl shadow-slate-200/50 bg-white group">
+        <div 
+          onClick={() => {
+            setSelectedStatuses(['AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE']);
+          }}
+          className={`card-premium p-6 flex items-center justify-between border-0 shadow-xl shadow-slate-200/50 bg-white group cursor-pointer transition-all active:scale-95 ${!selectedStatuses.includes('ORÇAMENTO') && !selectedStatuses.includes('CANCELADO') && !selectedStatuses.includes('TODOS') ? 'ring-2 ring-emerald-500/20 bg-emerald-50/5' : ''}`}
+        >
           <div className="flex-1">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Total Convertido</p>
              {loading ? (
@@ -253,9 +287,13 @@ const Vendas = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="flex items-center gap-2 px-8 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-black text-slate-600 hover:bg-slate-50 transition-all shadow-sm uppercase tracking-widest">
-          <Filter size={18} /> Filtros
-        </button>
+        <MultiSelectDropdown 
+          label="Filtrar por Status"
+          options={statusOptions}
+          selected={selectedStatuses}
+          onToggle={toggleSelection}
+          icon={Filter}
+        />
       </div>
 
       {/* Tabela de Orçamentos */}

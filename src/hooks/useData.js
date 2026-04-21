@@ -115,6 +115,9 @@ export const useOrders = () => {
 
   const updateOrderProgress = async (id, data) => {
     if (hasRealConnection()) {
+      // Atualização Otimista para resposta imediata na UI
+      setOrders(current => current.map(os => os.id === id ? { ...os, ...data } : os));
+
       try {
         // Intercepta ENTREGA para dar baixa no estoque (Status Final)
         // O usuário solicitou que o estoque só seja movimentado quando marcado como ENTREGUE
@@ -149,6 +152,9 @@ export const useOrders = () => {
 
         if (error) {
            console.error('Erro ao atualizar OS:', error);
+           // Rollback otimista em caso de erro crítico
+           await fetchOrders();
+           
            if (error.code === '42703' || error.message?.includes('column')) {
               const minimalData = { 
                 status: data.status, 
@@ -168,7 +174,10 @@ export const useOrders = () => {
              throw error;
            }
         }
-        await fetchOrders();
+        
+        // Se não houver erro, o estado já foi atualizado otimisticamente
+        // mas o fetchOrders garante que pegamos dados desnormalizados do banco (nomes, etc)
+        fetchOrders(); 
         return { success: true };
       } catch (error) {
         console.error('Falha crítica no hook useOrders:', error);
@@ -471,7 +480,6 @@ export const useClients = () => {
           error: { message: `Este telefone já pertence ao cliente: ${existing[0].nome}` } 
         };
       }
-
       const { error } = await supabase.from('clientes').update(cleanData).eq('id', id);
       if (!error) await fetchClients();
       return { success: !error, error };
@@ -479,7 +487,16 @@ export const useClients = () => {
     return { success: true };
   };
 
-  return { clients, loading, saveClient, updateClient };
+  const deleteClient = async (id) => {
+    if (hasRealConnection()) {
+      const { error } = await supabase.from('clientes').delete().eq('id', id);
+      if (!error) await fetchClients();
+      return { success: !error, error };
+    }
+    return { success: true };
+  };
+
+  return { clients, loading, saveClient, updateClient, deleteClient };
 };
 
 export const useQuotes = () => {
