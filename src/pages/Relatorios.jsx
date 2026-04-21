@@ -243,7 +243,7 @@ const Relatorios = () => {
                   Relatório Detalhado de Atividades
                </h3>
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 print:text-black print:tracking-tight print:mt-1">
-                 Período: {new Date(startDate).toLocaleDateString('pt-BR')} até {new Date(endDate).toLocaleDateString('pt-BR')}
+                 Período: {formatDateBR(startDate)} até {formatDateBR(endDate)}
                </p>
             </div>
             
@@ -275,7 +275,7 @@ const Relatorios = () => {
                   <tr key={os.id} className="hover:bg-slate-50/30 transition-colors print:page-break-inside-avoid">
                     <td className="px-8 py-5 print:py-3">
                        <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-[0.8rem] uppercase print:bg-transparent print:p-0 print:text-black">
-                         {new Date(os.data_agendamento || os.created_at).toLocaleDateString('pt-BR')}
+                         {formatDateBR(os.data_agendamento || os.created_at)}
                        </span>
                     </td>
                     <td className="px-6 py-5 print:py-3 underline-offset-4">
@@ -410,20 +410,38 @@ const getEndOfMonth = () => {
   return `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
 };
 
+const formatDateBR = (dateString) => {
+  if (!dateString) return '--';
+  // Se for YYYY-MM-DD
+  if (dateString.includes('-')) {
+    const parts = dateString.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+  }
+  try {
+    const d = new Date(dateString);
+    return d.toLocaleDateString('pt-BR');
+  } catch {
+    return dateString;
+  }
+};
+
 const isDateInInterval = (target, start, end) => {
   if (!target) return false;
   
-  // Converte o alvo (ISO de banco) para timestamp local do dia (00:00:00)
-  const tDate = new Date(target);
-  const t = new Date(tDate.getFullYear(), tDate.getMonth(), tDate.getDate()).getTime();
+  // Normaliza target para o dia local (00:00:00) ignorando a hora UTC do banco
+  const tStr = String(target).split('T')[0];
+  const [tY, tM, tD] = tStr.split('-').map(Number);
+  const t = new Date(tY, tM - 1, tD).getTime();
   
-  // Converte start (YYYY-MM-DD) para timestamp local do dia
-  const [sYear, sMonth, sDay] = start.split('-').map(Number);
-  const s = new Date(sYear, sMonth - 1, sDay).getTime();
+  // Converte start/end (YYYY-MM-DD) para timestamp local do dia
+  const [sY, sM, sD] = start.split('-').map(Number);
+  const s = new Date(sY, sM - 1, sD).getTime();
   
-  // Converte end (YYYY-MM-DD) para timestamp local do dia
-  const [eYear, eMonth, eDay] = end.split('-').map(Number);
-  const e = new Date(eYear, eMonth - 1, eDay).getTime();
+  const [eY, eM, eD] = end.split('-').map(Number);
+  const e = new Date(eY, eM - 1, eD).getTime();
   
   return t >= s && t <= e;
 };
